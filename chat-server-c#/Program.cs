@@ -8,7 +8,9 @@ namespace chat_server_c
     {
         static void Main(string[] args)
         {
-            MongoClient dbClient = new MongoClient("mongodb://localhost:27017");
+            const string connectionString = "mongodb://localhost:27017";
+
+            MongoClient dbClient = new MongoClient(connectionString);
 
             var dbList = dbClient.ListDatabases().ToList();
 

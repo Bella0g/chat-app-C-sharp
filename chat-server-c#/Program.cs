@@ -8,17 +8,34 @@ namespace chat_server_c
     {
         static void Main(string[] args)
         {
-            const string connectionString = "mongodb://localhost:27017";
+            const string clientString = "mongodb://localhost:27017";
 
-            MongoClient dbClient = new MongoClient(connectionString);
+            MongoClient dbClient = new MongoClient(clientString);
 
-            var dbList = dbClient.ListDatabases().ToList();
+            var database = dbClient.GetDatabase("Users");
+            var collection = database.GetCollection<User>("users");
 
-            Console.WriteLine("The list of databases on this server is: ");
-            foreach (var db in dbList)
+            Console.WriteLine("Enter username: ");
+            string username = Console.ReadLine();
+
+            Console.WriteLine("Enter password: ");
+            string password = Console.ReadLine();
+
+            var user = new User
             {
-                Console.WriteLine(db);
-            }
+                Username = username,
+                Password = password
+            };
+
+            collection.InsertOne(user);
+
+            Console.WriteLine("User is now registered!");
+         
+        }
+        public class User
+        {
+            public string Username { get; set; }
+            public string Password { get; set; }
         }
     }
 }

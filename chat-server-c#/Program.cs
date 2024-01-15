@@ -1,4 +1,5 @@
 ﻿using System;
+using chat_app_shared_c_;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -71,18 +72,5 @@ namespace chat_server_c
             }
         }
 
-
-
-
-
-
-
-
-        //User class to represent the user data
-        public class User
-        {
-            public string Username { get; set; }
-            public string Password { get; set; }
-        }
     }
 }

@@ -12,4 +12,8 @@
     <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\chat-app-shared-c#\chat-app-shared-c#.csproj" />
+  </ItemGroup>
+
 </Project>

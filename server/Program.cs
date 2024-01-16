@@ -24,7 +24,7 @@ namespace chat_server_c
             {
 
                 Console.WriteLine("Enter username: "); //Asking the user to enter username using the terminal
-                username = Console.ReadLine(); //Read the input for username from the terminal
+                username = Console.ReadLine()!; //Read the input for username from the terminal
 
 
                 if (string.IsNullOrWhiteSpace(username)) //Checking if the username string is null or whitespace
@@ -40,7 +40,7 @@ namespace chat_server_c
             do
             {
                 Console.WriteLine("Enter password: "); //Asking the user to enter password using the terminal
-                password = Console.ReadLine(); //Read the input for password from the terminal
+                password = Console.ReadLine()!; //Read the input for password from the terminal
 
 
                 if (string.IsNullOrWhiteSpace(password)) //Checking if the password string is null or whitespace

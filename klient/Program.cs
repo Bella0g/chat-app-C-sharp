@@ -1,4 +1,4 @@
-﻿namespace chat_app_c_;
+﻿namespace chat_client;
 
 class ChatMessages
 {

@@ -24,14 +24,14 @@ namespace chat_server_c
             {
 
                 Console.WriteLine("Enter username: "); //Asking the user to enter username using the terminal
-                username = Console.ReadLine(); //Read the input for username from the terminal
+                username = Console.ReadLine()!; //Read the input for username from the terminal
 
 
-                if (string.IsNullOrEmpty(username)) //Checking if the username string is null or empty
+                if (string.IsNullOrWhiteSpace(username)) //Checking if the username string is null or whitespace
                 {
                     Console.WriteLine("Error: You need to enter a username."); //Error message for empty input
                 }
-            } while (string.IsNullOrEmpty(username)); //Condition for the loop to continue to execute as long as the username is null or a empty string
+            } while (string.IsNullOrWhiteSpace(username)); //Condition for the loop to continue to execute as long as the username is null or a empty string
 
 
             //Declaring variable password to store the entered password
@@ -40,16 +40,16 @@ namespace chat_server_c
             do
             {
                 Console.WriteLine("Enter password: "); //Asking the user to enter password using the terminal
-                password = Console.ReadLine(); //Read the input for password from the terminal
+                password = Console.ReadLine()!; //Read the input for password from the terminal
 
 
-                if (string.IsNullOrEmpty(password)) //Checking if the password string is null or empty
+                if (string.IsNullOrWhiteSpace(password)) //Checking if the password string is null or whitespace
                 {
                     Console.WriteLine("Error: You need to enter a password."); //Error message for empty input
                 }
-            } while (string.IsNullOrEmpty(password)); //Condition for the loop to continue to execute as long as the password is null or a empty string
+            } while (string.IsNullOrWhiteSpace(password)); //Condition for the loop to continue to execute as long as the password is null or whitespaced
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) //Checks if either the username or password is null or an empty string.
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) //Checks if either the username or password is null or whitespaced.
             {
                 Console.WriteLine("Error: You need to enter a password and/or username."); //Error message if the If statement is true.
             }

@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\chat-app-shared-c#\Shared.csproj" />
+    <ProjectReference Include="..\shared\Shared.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,40 +11,74 @@ class ChatMessages
         {
             if (isLoggedIn)
             {
-
                 // Användaren är inloggad, implementera keybindings för chattfunktioner
-                Console.WriteLine("Tryck r för att registrera användare.");
-                Console.WriteLine("Tryck l för att logga in.");
                 Console.WriteLine("Tryck i för att börja skriva meddelanden.");
                 Console.WriteLine("Tryck Enter för att skicka meddelandet.");
-                Console.WriteLine("Tryck Backspace för att gå tillbaka till registrering/login menyn.");
+                Console.WriteLine("Tryck l för att logga ut.");
 
                 if (isInMessageMode)
                 {
                     Console.WriteLine("Tryck Enter för att skicka meddelandet");
-                }
-                else
-                {
-                    Console.WriteLine("Tryck i för att börja skriva meddelanden");
                 }
 
                 ConsoleKeyInfo key = Console.ReadKey();
 
                 switch (key.Key)
                 {
-                    case ConsoleKey.D1:
-                        Console.WriteLine("\nSkriv meddelande och tryck Enter:");
-                        string message = Console.ReadLine()!;
-                        // Skicka meddelandet till servern
+                    case ConsoleKey.I:
+                        isInMessageMode = true;
                         break;
 
-                        
-                    case ConsoleKey.D2:
-                        Console.WriteLine("\nAnge användarnamn för privat meddelande:");
-                        string recipient = Console.ReadLine();
-                        Console.WriteLine($"Skriv ditt privat meddelande till {recipient} och tryck Enter:");
-                        string privateMessage = Console.ReadLine();
-                        // Skicka det privata meddelandet till servern
+                    case ConsoleKey.Enter:
+                        if (isInMessageMode)
+                        {
+                            Console.WriteLine("\nSkriv ditt meddelande:");
+                            string message = Console.ReadLine()!;
+                            // Skicka meddelandet till servern
+                            isInMessageMode = false;
+                        }
+                        break;
+
+                    case ConsoleKey.L:
+                        isLoggedIn = false;
+                        Console.WriteLine("\nDu har loggat ut.");
+                        break;
+
+                    default:
+                        Console.WriteLine("\nOgiltig tangent. Försök igen.");
+                        break;
+                }
+
+            }
+
+            else
+            {
+                // Användaren är inte inloggad, implementera keybindings för inloggning och registrering
+                Console.WriteLine("Tryck r för att registrera användare.");
+                Console.WriteLine("Tryck l för att logga in.");
+                Console.WriteLine("Tryck q för att avsluta programmet.");
+
+                ConsoleKeyInfo key = Console.ReadKey();
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.R:
+                        Console.WriteLine("\nAnge ditt användarnamn och lösenord för registrering:");
+                        // Registreringslogik
+                        break;
+
+                    case ConsoleKey.L:
+                        Console.WriteLine("\nAnge ditt användarnamn och lösenord för inloggning:");
+                        // Inloggningslogik och sätt isLoggedIn till true om inloggningen är framgångsrik
+                        isLoggedIn = true;
+                        break;
+
+                    case ConsoleKey.Q:
+                        Environment.Exit(0);
+                        break;
+
+                    default:
+                        Console.WriteLine("\nOgiltig tangent. Försök igen.");
                         break;
                 }
 
@@ -53,7 +87,8 @@ class ChatMessages
     }
 }
 
+
 class ChatClient
 {
-
+    // Add client logik
 }

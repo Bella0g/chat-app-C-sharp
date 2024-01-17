@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "chat-app-c#", "chat-app-c#\chat-app-c#.csproj", "{C7919A7E-6E7A-4A95-BAC6-EE3FA8960325}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klient", "chat-app-c#\Klient.csproj", "{C7919A7E-6E7A-4A95-BAC6-EE3FA8960325}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "chat-server-c#", "chat-server-c#\chat-server-c#.csproj", "{7D064A37-19F2-4A1E-B620-B75BC2A610AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "chat-server-c#\Server.csproj", "{7D064A37-19F2-4A1E-B620-B75BC2A610AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chat-app-shared-c#", "chat-app-shared-c#\chat-app-shared-c#.csproj", "{B16E0FF3-133F-4D0D-A27B-A06347B9630F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "chat-app-shared-c#\Shared.csproj", "{B16E0FF3-133F-4D0D-A27B-A06347B9630F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

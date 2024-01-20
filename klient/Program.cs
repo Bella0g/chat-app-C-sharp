@@ -1,4 +1,7 @@
-﻿namespace chat_client;
+﻿using System;
+using System.Net.Sockets;
+using System.Text;
+namespace chat_client;
 
 class ChatMessages
 {
@@ -6,6 +9,8 @@ class ChatMessages
     {
         bool isLoggedIn = false;
         bool isInMessageMode = false;
+        string regUsername;
+        string regPassword;
 
         while (true)
         {
@@ -64,8 +69,49 @@ class ChatMessages
                 {
                     case ConsoleKey.R:
                         Console.WriteLine("\nAnge ditt användarnamn och lösenord för registrering:");
-                        // Registreringslogik
+
+                        do
+                        {
+                            Console.WriteLine("Enter username: "); //Asking the user to enter username using the terminal
+                            regUsername = Console.ReadLine()!; //Read the input for username from the terminal
+
+                            if (string.IsNullOrWhiteSpace(regUsername)) //Checking if the username string is null or whitespace
+                            {
+                                Console.WriteLine("Error: You need to enter a username."); //Error message for empty input
+                            }
+                        } while (string.IsNullOrWhiteSpace(regUsername)); //Condition for the loop to continue to execute as long as the username is null or a empty string
+
+                        do
+                        {
+                            Console.WriteLine("Enter password: "); //Asking the user to enter password using the terminal
+                            regPassword = Console.ReadLine()!; //Read the input for password from the terminal
+
+                            if (string.IsNullOrWhiteSpace(regPassword)) //Checking if the password string is null or whitespace
+                            {
+                                Console.WriteLine("Error: You need to enter a password."); //Error message for empty input
+                            }
+                        } while (string.IsNullOrWhiteSpace(regPassword)); //Condition for the loop to continue to execute as long as the password is null or whitespaced
+
+                        // Skapa en sträng för registreringsdata för att skicka till servern.
+                        string registrationData = $"{regUsername},{regPassword}";
+
+                        //Socket
+                        //Skapar en TcpClient och anger ip och port för att ansluta till server.
+                        //Här får vi ange en publik ip senare om vi alla ska kunna ansluta.
+                        TcpClient regTcpClient = new TcpClient("127.0.0.1", 27500);
+
+                        //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
+                        NetworkStream regStream = regTcpClient.GetStream();
+
+                        //Konverterar registreringsdatan genom ASCII-kodning.
+                        byte[] regBuffer = Encoding.ASCII.GetBytes(registrationData);
+
+                        //Skickar registreringsdata till servern genom nätverksströmmen
+                        regStream.Write(regBuffer, 0, regBuffer.Length);
+
+                        Console.WriteLine("Registreringen är klar.");
                         break;
+
 
                     case ConsoleKey.L:
                         Console.WriteLine("\nAnge ditt användarnamn och lösenord för inloggning:");

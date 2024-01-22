@@ -68,7 +68,7 @@ namespace chat_client;
         } while (string.IsNullOrWhiteSpace(regPassword)); //Condition for the loop to continue to execute as long as the password is null or whitespaced
 
         // Skapa en sträng för registreringsdata för att skicka till servern.
-        string registrationData = $"{regUsername},{regPassword}";
+        string registrationData = $"REGISTER.{regUsername},{regPassword}";
 
         //Socket
         //Skapar en TcpClient och anger ip och port för att ansluta till server.
@@ -95,7 +95,7 @@ namespace chat_client;
         Console.Write("Enter password: ");
         string password = Console.ReadLine();
 
-        string loginData = $"{username},{password}";
+        string loginData = $"LOGIN.{username},{password}";
 
         TcpClient regTcpClient = new TcpClient("127.0.0.1", 27500);
 

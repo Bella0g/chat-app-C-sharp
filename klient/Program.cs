@@ -1,13 +1,17 @@
 
 using System;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 namespace chat_client;
 
- class ChatMessages
- {
+class ChatMessages
+{
     static void Main(string[] args)
     {
+        TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+        //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
+        NetworkStream stream = tcpClient.GetStream();
 
         while (true)
         {
@@ -19,14 +23,14 @@ namespace chat_client;
 
             switch (key.Key)
             {
-               case ConsoleKey.R:
+                case ConsoleKey.R:
                     Console.WriteLine("\nAnge ditt användarnamn och lösenord för registrering:");
-                    RegisterUser();
+                    RegisterUser(stream);
                     break;
 
-               case ConsoleKey.L:
+                case ConsoleKey.L:
                     Console.WriteLine("\nAnge ditt användarnamn och lösenord för inloggning:");
-                    LoginUser();
+                    LoginUser(stream);
                     break;
 
                 case ConsoleKey.Q:
@@ -39,8 +43,8 @@ namespace chat_client;
             }
         }
     }
-    
-    private static void RegisterUser()
+
+    public static void RegisterUser(NetworkStream stream)
     {
         string regUsername;
         string regPassword;
@@ -73,21 +77,19 @@ namespace chat_client;
         //Socket
         //Skapar en TcpClient och anger ip och port för att ansluta till server.
         //Här får vi ange en publik ip senare om vi alla ska kunna ansluta.
-        TcpClient regTcpClient = new TcpClient("127.0.0.1", 27500);
 
-        //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
-        NetworkStream regStream = regTcpClient.GetStream();
 
         //Konverterar registreringsdatan genom ASCII-kodning.
         byte[] regBuffer = Encoding.ASCII.GetBytes(registrationData);
 
         //Skickar registreringsdata till servern genom nätverksströmmen
-        regStream.Write(regBuffer, 0, regBuffer.Length);
+        stream.Write(regBuffer, 0, regBuffer.Length);
 
-        Console.WriteLine("Registreringen är klar.");
+        string replyData = ReadServerReply(stream);
+
+        Console.WriteLine(replyData);
     }
-
-    private static void LoginUser()
+    private static void LoginUser(NetworkStream stream)
     {
         Console.Write("Enter username: ");
         string username = Console.ReadLine();
@@ -97,19 +99,45 @@ namespace chat_client;
 
         string loginData = $"LOGIN.{username},{password}";
 
-        TcpClient regTcpClient = new TcpClient("127.0.0.1", 27500);
-
-        //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
-        NetworkStream regStream = regTcpClient.GetStream();
-
         //Konverterar registreringsdatan genom ASCII-kodning.
-        byte[] regBuffer = Encoding.ASCII.GetBytes(loginData);
+        byte[] loginBuffer = Encoding.ASCII.GetBytes(loginData);
 
         //Skickar registreringsdata till servern genom nätverksströmmen
-        regStream.Write(regBuffer, 0, regBuffer.Length);
+        stream.Write(loginBuffer, 0, loginBuffer.Length);
+
+        string replyData = ReadServerReply(stream);
+
+        Console.WriteLine(replyData);
 
     }
-}
+    private static string ReadServerReply(NetworkStream stream) 
+    {
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        StringBuilder replyDataBuilder = new StringBuilder();
+        //Läser in data från klienten så länge det finns data att läsa.
+        do
+        {
+            bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+            if (bytesRead > 0)
+            {
+                // Convert the incoming byte array to a string and append it to the reply data.
+                string partialReplyData = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                replyDataBuilder.Append(partialReplyData);
+
+                // Clear the buffer for the next iteration.
+                Array.Clear(buffer, 0, buffer.Length);
+            }
+        } while (stream.DataAvailable);
+
+        // Display the complete server's reply.
+        return replyDataBuilder.ToString();
+    }
+
+ 
+    }
+
 
 /*
  * 

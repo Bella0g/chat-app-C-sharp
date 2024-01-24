@@ -1,4 +1,3 @@
-
 using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -12,7 +11,41 @@ class ChatMessages
         TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
         //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
         NetworkStream stream = tcpClient.GetStream();
+        MainMenu(stream);
 
+        //while (true)
+        //{
+        //    // Användaren är inte inloggad, implementera keybindings för inloggning och registrering
+        //    Console.WriteLine("Tryck r för att registrera användare.");
+        //    Console.WriteLine("Tryck l för att logga in.");
+        //    Console.WriteLine("Tryck q för att avsluta programmet.");
+        //    ConsoleKeyInfo key = Console.ReadKey();
+
+        //    switch (key.Key)
+        //    {
+        //        case ConsoleKey.R:
+        //            Console.WriteLine("\nAnge ditt användarnamn och lösenord för registrering:");
+        //            RegisterUser(stream);
+        //            break;
+
+        //        case ConsoleKey.L:
+        //            Console.WriteLine("\nAnge ditt användarnamn och lösenord för inloggning:");
+        //            LoginUser(stream);
+        //            break;
+
+        //        case ConsoleKey.Q:
+        //            Environment.Exit(0);
+        //            break;
+
+        //        default:
+        //            Console.WriteLine("\nOgiltig tangent. Försök igen.");
+        //            break;
+        //    }
+        //}
+    }
+
+    private static void MainMenu(NetworkStream stream)
+    {
         while (true)
         {
             // Användaren är inte inloggad, implementera keybindings för inloggning och registrering
@@ -109,8 +142,13 @@ class ChatMessages
 
         Console.WriteLine(replyData);
 
+        if (replyData.Contains("Welcome"))
+        {
+            LoggedInMenu(stream, username);
+        }
+
     }
-    private static string ReadServerReply(NetworkStream stream) 
+    private static string ReadServerReply(NetworkStream stream)
     {
         byte[] buffer = new byte[1024];
         int bytesRead;
@@ -135,35 +173,72 @@ class ChatMessages
         return replyDataBuilder.ToString();
     }
 
- 
+    private static void LoggedInMenu(NetworkStream stream, string username)
+    {
+        while (true)
+        {
+            Console.WriteLine("1. Message to server");
+            Console.WriteLine("2. Private chat");
+            Console.WriteLine("3. Logout");
+
+            ConsoleKeyInfo key = Console.ReadKey();
+            byte[] userChoiceBuffer;
+
+            switch (key.Key)
+            {
+                case ConsoleKey.D1:
+                    Console.WriteLine("Type message: ");
+                    string message = Console.ReadLine();
+                    string messageData = ($"MESSAGE.{ username },{ message }");
+                    byte[] messageBuffer = Encoding.ASCII.GetBytes(messageData);
+                    stream.Write(messageBuffer, 0, messageBuffer.Length);
+                    break;
+
+                case ConsoleKey.D2:
+                    userChoiceBuffer = Encoding.ASCII.GetBytes("2");
+                    stream.Write(userChoiceBuffer, 0, userChoiceBuffer.Length);
+                    break;
+
+                case ConsoleKey.D3:
+                    // Logout option
+                    MainMenu(stream);
+                    break;
+
+                default:
+                    Console.WriteLine("\nInvalid choice. Try again.");
+                    break;
+            }
+        }
     }
+
+}
 
 
 /*
- * 
- * bool isLoggedIn = false;
+* 
+* bool isLoggedIn = false;
    bool isInMessageMode = false;
-
+ 
 if (isLoggedIn)
             {
                 // Användaren är inloggad, implementera keybindings för chattfunktioner
                 Console.WriteLine("Tryck i för att börja skriva meddelanden.");
                 Console.WriteLine("Tryck Enter för att skicka meddelandet.");
                 Console.WriteLine("Tryck l för att logga ut.");
-
+ 
                 if (isInMessageMode)
                 {
                     Console.WriteLine("Tryck Enter för att skicka meddelandet");
                 }
-
+ 
                 ConsoleKeyInfo key = Console.ReadKey();
-
+ 
 switch (key.Key)
 {
     case ConsoleKey.I:
         isInMessageMode = true;
         break;
-
+ 
     case ConsoleKey.Enter:
         if (isInMessageMode)
         {
@@ -173,18 +248,16 @@ switch (key.Key)
             isInMessageMode = false;
         }
         break;
-
+ 
     case ConsoleKey.L:
         isLoggedIn = false;
         Console.WriteLine("\nDu har loggat ut.");
         break;
-
+ 
     default:
         Console.WriteLine("\nOgiltig tangent. Försök igen.");
         break;
 }
-
+ 
             }
 */
-
-

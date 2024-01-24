@@ -2,6 +2,10 @@ using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
+using System.Collections.Generic;
+
 namespace chat_client;
 
 class ChatMessages
@@ -13,35 +17,6 @@ class ChatMessages
         NetworkStream stream = tcpClient.GetStream();
         MainMenu(stream);
 
-        //while (true)
-        //{
-        //    // Användaren är inte inloggad, implementera keybindings för inloggning och registrering
-        //    Console.WriteLine("Tryck r för att registrera användare.");
-        //    Console.WriteLine("Tryck l för att logga in.");
-        //    Console.WriteLine("Tryck q för att avsluta programmet.");
-        //    ConsoleKeyInfo key = Console.ReadKey();
-
-        //    switch (key.Key)
-        //    {
-        //        case ConsoleKey.R:
-        //            Console.WriteLine("\nAnge ditt användarnamn och lösenord för registrering:");
-        //            RegisterUser(stream);
-        //            break;
-
-        //        case ConsoleKey.L:
-        //            Console.WriteLine("\nAnge ditt användarnamn och lösenord för inloggning:");
-        //            LoginUser(stream);
-        //            break;
-
-        //        case ConsoleKey.Q:
-        //            Environment.Exit(0);
-        //            break;
-
-        //        default:
-        //            Console.WriteLine("\nOgiltig tangent. Försök igen.");
-        //            break;
-        //    }
-        //}
     }
 
     private static void MainMenu(NetworkStream stream)

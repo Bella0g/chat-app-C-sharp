@@ -9,9 +9,6 @@ namespace chat_app_shared_c_
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-
-        public int UserId { get; set; }
-
         public string? Username { get; set; }
         public string? Password { get; set; }
         public List<string> Message { get; set; } = new List<string>();

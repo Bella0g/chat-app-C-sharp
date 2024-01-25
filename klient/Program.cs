@@ -14,7 +14,11 @@ class ChatMessages
 {
     static void Main(string[] args)
     {
+        //Socket
+        //Skapar en TcpClient och anger ip och port för att ansluta till server.
+        //Här får vi ange en publik ip senare om vi alla ska kunna ansluta.
         TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+
         //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
         NetworkStream stream = tcpClient.GetStream();
         MainMenu(stream);
@@ -83,51 +87,78 @@ class ChatMessages
 
         // Skapa en sträng för registreringsdata för att skicka till servern.
         string registrationData = $"REGISTER.{regUsername},{regPassword}";
+        SendToServer(stream, registrationData);
 
-        //Socket
-        //Skapar en TcpClient och anger ip och port för att ansluta till server.
-        //Här får vi ange en publik ip senare om vi alla ska kunna ansluta.
-
-
-        //Konverterar registreringsdatan genom ASCII-kodning.
-        byte[] regBuffer = Encoding.ASCII.GetBytes(registrationData);
-
-        //Skickar registreringsdata till servern genom nätverksströmmen
-        stream.Write(regBuffer, 0, regBuffer.Length);
-
-        string replyData = ReadServerReply(stream);
-
+        string replyData = ReadFromServer(stream);
         Console.WriteLine(replyData);
     }
+
     private static void LoginUser(NetworkStream stream)
     {
         Console.Write("Enter username: ");
-        string username = Console.ReadLine();
+        string? username = Console.ReadLine();
 
         Console.Write("Enter password: ");
-        string password = Console.ReadLine();
+        string? password = Console.ReadLine();
+        Console.Clear();
 
-        string loginData = $"LOGIN.{username},{password}";
+        string? loginData = $"LOGIN.{username},{password}";
+        SendToServer(stream, loginData);
 
-        //Konverterar registreringsdatan genom ASCII-kodning.
-        byte[] loginBuffer = Encoding.ASCII.GetBytes(loginData);
-
-        //Skickar registreringsdata till servern genom nätverksströmmen
-        stream.Write(loginBuffer, 0, loginBuffer.Length);
-
-        string replyData = ReadServerReply(stream);
-
-        Console.WriteLine(replyData);
+        string replyData = ReadFromServer(stream);
+        Console.WriteLine($"{replyData}\n");
 
         if (replyData.Contains("Welcome"))
         {
             LoggedInMenu(stream, username);
-
         }
-
-
     }
-    private static string ReadServerReply(NetworkStream stream)
+    
+    private static void LoggedInMenu(NetworkStream stream, string username)
+    {
+
+        while (true)
+        {
+            Console.WriteLine("\n1. Public chat");
+            Console.WriteLine("2. Private chat");
+            Console.WriteLine("3. Logout");
+            Console.WriteLine("4. Send a message to the server");
+
+            ConsoleKeyInfo key = Console.ReadKey();
+
+            switch (key.Key)
+            {
+                case ConsoleKey.D1:
+                    PublicChat();
+                    break;
+
+                case ConsoleKey.D2:
+                    PrivateChat();
+                    break;
+
+                case ConsoleKey.D3:
+                    
+                    return;
+
+                case ConsoleKey.D4:
+                    Message(stream, username); //Send message to self
+                    break;
+
+                default:
+                    Console.WriteLine("\nInvalid choice. Try again.");
+                    break;
+            }
+        }
+    }
+
+    private static void SendToServer(NetworkStream stream, string data)
+    {
+        //Konverterar registreringsdatan genom ASCII-kodning och skickar denna till servern.
+        byte[] messageBuffer = Encoding.ASCII.GetBytes(data);
+        stream.Write(messageBuffer, 0, messageBuffer.Length);
+    }
+
+    private static string ReadFromServer(NetworkStream stream)
     {
         byte[] buffer = new byte[1024];
         int bytesRead;
@@ -152,50 +183,11 @@ class ChatMessages
         return replyDataBuilder.ToString();
     }
 
-    private static void LoggedInMenu(NetworkStream stream, string username)
-    {
-
-        while (true)
-        {
-
-            Console.WriteLine("\n1. Public chat");
-            Console.WriteLine("2. Private chat");
-            Console.WriteLine("3. Logout");
-
-            ConsoleKeyInfo key = Console.ReadKey();
-
-
-
-            switch (key.Key)
-            {
-                case ConsoleKey.D1:
-                    
-                    break;
-
-                case ConsoleKey.D2:
-
-                    break;
-
-                case ConsoleKey.D3:
-                    
-                    return;
-
-                case ConsoleKey.D4:
-                    SendToServer(stream, username); //Send message to self
-                    break;
-
-                default:
-                    Console.WriteLine("\nInvalid choice. Try again.");
-                    break;
-            }
-        }
-    }
-
     private static void ReadAndPrintMessages(NetworkStream stream, string username) //Method to read messages from the server and prints to the console
     {
         do
         {
-            string messages = ReadServerReply(stream);
+            string messages = ReadFromServer(stream);
             Console.WriteLine($"{messages}\n");
 
             Console.WriteLine("Press 'M' to go back to the menu...");
@@ -209,14 +201,43 @@ class ChatMessages
         } while (true); //the loop continues as long as the recived message is not null or empty
 
     }
-    private static void SendToServer(NetworkStream stream, string username)
+
+    private static void PublicChat()
     {
-        Console.WriteLine("Type message: ");
-        string message = Console.ReadLine();
-        string messageData = ($"MESSAGE.{username},{message}");
-        byte[] messageBuffer = Encoding.ASCII.GetBytes(messageData);
-        stream.Write(messageBuffer, 0, messageBuffer.Length);
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("Welcome to the public chat!");
+            Console.WriteLine("Press q to leave the public chat.");
+            string option = Console.ReadLine();
+            if (option == "q" || option == "Q")
+            {
+                break;
+            }
+        }
     }
 
+    private static void PrivateChat()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("Welcome to the private chat!");
+            Console.WriteLine("Press q to leave the private chat.");
+            string option = Console.ReadLine();
+            if(option == "q" || option == "Q")
+            {
+                break;
+            }
+        }
+    }
+
+    private static void Message(NetworkStream stream, string username)
+    {
+        Console.WriteLine("Type message: ");
+        string? message = Console.ReadLine();
+        string messageData = ($"MESSAGE.{username},{message}");
+        SendToServer(stream, messageData);
+    }
 }
 

@@ -5,6 +5,8 @@ using System.Text;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.Collections.Generic;
+using ZstdSharp;
+using System.IO;
 
 namespace chat_client;
 
@@ -120,7 +122,9 @@ class ChatMessages
         if (replyData.Contains("Welcome"))
         {
             LoggedInMenu(stream, username);
+
         }
+
 
     }
     private static string ReadServerReply(NetworkStream stream)
@@ -150,33 +154,34 @@ class ChatMessages
 
     private static void LoggedInMenu(NetworkStream stream, string username)
     {
+
         while (true)
         {
-            Console.WriteLine("1. Message to server");
+
+            Console.WriteLine("\n1. Public chat");
             Console.WriteLine("2. Private chat");
             Console.WriteLine("3. Logout");
 
             ConsoleKeyInfo key = Console.ReadKey();
-            byte[] userChoiceBuffer;
+
+
 
             switch (key.Key)
             {
                 case ConsoleKey.D1:
-                    Console.WriteLine("Type message: ");
-                    string message = Console.ReadLine();
-                    string messageData = ($"MESSAGE.{ username },{ message }");
-                    byte[] messageBuffer = Encoding.ASCII.GetBytes(messageData);
-                    stream.Write(messageBuffer, 0, messageBuffer.Length);
+                    
                     break;
 
                 case ConsoleKey.D2:
-                    userChoiceBuffer = Encoding.ASCII.GetBytes("2");
-                    stream.Write(userChoiceBuffer, 0, userChoiceBuffer.Length);
+
                     break;
 
                 case ConsoleKey.D3:
-                    // Logout option
-                    MainMenu(stream);
+                    
+                    return;
+
+                case ConsoleKey.D4:
+                    SendToServer(stream, username); //Send message to self
                     break;
 
                 default:
@@ -186,53 +191,32 @@ class ChatMessages
         }
     }
 
-}
-
-
-/*
-* 
-* bool isLoggedIn = false;
-   bool isInMessageMode = false;
- 
-if (isLoggedIn)
-            {
-                // Användaren är inloggad, implementera keybindings för chattfunktioner
-                Console.WriteLine("Tryck i för att börja skriva meddelanden.");
-                Console.WriteLine("Tryck Enter för att skicka meddelandet.");
-                Console.WriteLine("Tryck l för att logga ut.");
- 
-                if (isInMessageMode)
-                {
-                    Console.WriteLine("Tryck Enter för att skicka meddelandet");
-                }
- 
-                ConsoleKeyInfo key = Console.ReadKey();
- 
-switch (key.Key)
-{
-    case ConsoleKey.I:
-        isInMessageMode = true;
-        break;
- 
-    case ConsoleKey.Enter:
-        if (isInMessageMode)
+    private static void ReadAndPrintMessages(NetworkStream stream, string username) //Method to read messages from the server and prints to the console
+    {
+        do
         {
-            Console.WriteLine("\nSkriv ditt meddelande:");
-            string message = Console.ReadLine()!;
-            // Skicka meddelandet till servern
-            isInMessageMode = false;
-        }
-        break;
- 
-    case ConsoleKey.L:
-        isLoggedIn = false;
-        Console.WriteLine("\nDu har loggat ut.");
-        break;
- 
-    default:
-        Console.WriteLine("\nOgiltig tangent. Försök igen.");
-        break;
-}
- 
+            string messages = ReadServerReply(stream);
+            Console.WriteLine($"{messages}\n");
+
+            Console.WriteLine("Press 'M' to go back to the menu...");
+            ConsoleKeyInfo key = Console.ReadKey();
+
+            if (key.Key == ConsoleKey.M)
+            {
+                return; // Return to the menu
             }
-*/
+
+        } while (true); //the loop continues as long as the recived message is not null or empty
+
+    }
+    private static void SendToServer(NetworkStream stream, string username)
+    {
+        Console.WriteLine("Type message: ");
+        string message = Console.ReadLine();
+        string messageData = ($"MESSAGE.{username},{message}");
+        byte[] messageBuffer = Encoding.ASCII.GetBytes(messageData);
+        stream.Write(messageBuffer, 0, messageBuffer.Length);
+    }
+
+}
+

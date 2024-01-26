@@ -133,7 +133,7 @@ class ChatMessages
                     break;
 
                 case ConsoleKey.D2:
-                    PrivateChat();
+                    PrivateChat(stream, username);
                     break;
 
                 case ConsoleKey.D3:
@@ -217,7 +217,7 @@ class ChatMessages
         }
     }
 
-    private static void PrivateChat()
+    private static void PrivateChat(NetworkStream stream, string username)
     {
         while (true)
         {
@@ -229,16 +229,8 @@ class ChatMessages
             {
                 break;
             }
-        }
-    }
 
-/*
-    // Message menu that apears when in a chat room
-    private static void MessageMenu(NetworkStream stream, string username)
-    {
-        while (true)
-        {
-            Console.WriteLine("\nMessage Menu:");
+            Console.WriteLine("\nPrivate Menu:");
             Console.WriteLine("1. Send Message");
             Console.WriteLine("2. Back to Main Menu");
 
@@ -251,15 +243,44 @@ class ChatMessages
                     break;
 
                 case ConsoleKey.D2:
-                    return; // Return to the main menu
+                    return; // Return to the login menu
 
                 default:
                     Console.WriteLine("\nInvalid choice. Try again.");
                     break;
             }
+
         }
     }
-*/
+
+    /*
+        // Message menu that apears when in a chat room
+        private static void MessageMenu(NetworkStream stream, string username)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nMessage Menu:");
+                Console.WriteLine("1. Send Message");
+                Console.WriteLine("2. Back to Main Menu");
+
+                ConsoleKeyInfo key = Console.ReadKey();
+
+                switch (key.Key)
+                {
+                    case ConsoleKey.D1:
+                        Message(stream, username);
+                        break;
+
+                    case ConsoleKey.D2:
+                        return; // Return to the main menu
+
+                    default:
+                        Console.WriteLine("\nInvalid choice. Try again.");
+                        break;
+                }
+            }
+        }
+    */
     private static void Message(NetworkStream stream, string username)
     {
         Console.WriteLine("Type message: ");

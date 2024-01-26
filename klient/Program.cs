@@ -169,15 +169,15 @@ class ChatMessages
             switch (key.Key)
             {
                 case ConsoleKey.D1:
-                    
+                    ReadAndPrintMessages(stream, username/*, isPrivateChat: false*/);
                     break;
 
                 case ConsoleKey.D2:
-
+                    ReadAndPrintMessages(stream, username/*, isPrivateChat: true*/);
                     break;
 
                 case ConsoleKey.D3:
-                    
+
                     return;
 
                 case ConsoleKey.D4:

@@ -7,11 +7,13 @@ using MongoDB.Bson;
 using System.Collections.Generic;
 using ZstdSharp;
 using System.IO;
+using SharpCompress.Compressors.Xz;
 
 namespace chat_client;
 
 class ChatMessages
 {
+    static string menu = "Main";
     static void Main(string[] args)
     {
         //Socket
@@ -21,18 +23,45 @@ class ChatMessages
 
         //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
         NetworkStream stream = tcpClient.GetStream();
-        MainMenu(stream);
+        Run(stream, "ABC");
+
 
     }
 
-    private static void MainMenu(NetworkStream stream)
+    private static void Run(NetworkStream stream, string username)
     {
+        PrintMainMenu();
         while (true)
         {
-            // Användaren är inte inloggad, implementera keybindings för inloggning och registrering
-            Console.WriteLine("Tryck r för att registrera användare.");
-            Console.WriteLine("Tryck l för att logga in.");
-            Console.WriteLine("Tryck q för att avsluta programmet.");
+            if (menu == "Main")
+            {
+                MainMenu(stream);
+            }
+            else if (menu == "Login")
+            {
+                LoggedInMenu(stream, username);
+            }
+            string Read = ReadFromServer(stream);
+            if (Read.Length != 0)
+            {
+                Console.WriteLine(Read);
+            }
+
+        }
+    }
+    private static void MainMenu(NetworkStream stream)
+    {
+
+
+        string username = "ABC";
+
+
+        // Användaren är inte inloggad, implementera keybindings för inloggning och registrering
+
+
+        //IF
+        if (Console.KeyAvailable)
+        {
             ConsoleKeyInfo key = Console.ReadKey();
 
             switch (key.Key)
@@ -45,7 +74,7 @@ class ChatMessages
                 case ConsoleKey.L:
                     Console.WriteLine("\nAnge ditt användarnamn och lösenord för inloggning:");
                     LoginUser(stream);
-                    break;
+                    return;
 
                 case ConsoleKey.Q:
                     Environment.Exit(0);
@@ -55,9 +84,28 @@ class ChatMessages
                     Console.WriteLine("\nOgiltig tangent. Försök igen.");
                     break;
             }
+
+            PrintMainMenu();
+
+
         }
+
+
     }
 
+    public static void PrintMainMenu()
+    {
+        Console.WriteLine("Tryck r för att registrera användare.");
+        Console.WriteLine("Tryck l för att logga in.");
+        Console.WriteLine("Tryck q för att avsluta programmet.");
+    }
+    public static void PrintLoggedInMenu()
+    {
+        Console.WriteLine("\n1. Public chat");
+        Console.WriteLine("2. Private chat");
+        Console.WriteLine("3. Logout");
+        Console.WriteLine("4. Send a message to the server");
+    }
     public static void RegisterUser(NetworkStream stream)
     {
         string regUsername;
@@ -88,9 +136,6 @@ class ChatMessages
         // Skapa en sträng för registreringsdata för att skicka till servern.
         string registrationData = $"REGISTER.{regUsername},{regPassword}";
         SendToServer(stream, registrationData);
-
-        string replyData = ReadFromServer(stream);
-        Console.WriteLine(replyData);
     }
 
     private static void LoginUser(NetworkStream stream)
@@ -105,25 +150,15 @@ class ChatMessages
         string? loginData = $"LOGIN.{username},{password}";
         SendToServer(stream, loginData);
 
-        string replyData = ReadFromServer(stream);
-        Console.WriteLine($"{replyData}\n");
-
-        if (replyData.Contains("Welcome"))
-        {
-            LoggedInMenu(stream, username);
-        }
+        menu = "Login";
+        PrintLoggedInMenu();
     }
 
     private static void LoggedInMenu(NetworkStream stream, string username)
     {
 
-        while (true)
+        if (Console.KeyAvailable)
         {
-            Console.WriteLine("\n1. Public chat");
-            Console.WriteLine("2. Private chat");
-            Console.WriteLine("3. Logout");
-            Console.WriteLine("4. Send a message to the server");
-
             ConsoleKeyInfo key = Console.ReadKey();
 
             switch (key.Key)
@@ -139,7 +174,7 @@ class ChatMessages
                     break;
 
                 case ConsoleKey.D3:
-
+                    menu = "Main";
                     return;
 
                 case ConsoleKey.D4:
@@ -162,25 +197,26 @@ class ChatMessages
 
     private static string ReadFromServer(NetworkStream stream)
     {
+        if (!stream.DataAvailable)
+        {
+            return "";
+        }
         byte[] buffer = new byte[1024];
         int bytesRead;
         StringBuilder replyDataBuilder = new StringBuilder();
         //Läser in data från klienten så länge det finns data att läsa.
-        do
+
+        bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+        if (bytesRead > 0)
         {
-            bytesRead = stream.Read(buffer, 0, buffer.Length);
+            // Convert the incoming byte array to a string and append it to the reply data.
+            string partialReplyData = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+            replyDataBuilder.Append(partialReplyData);
 
-            if (bytesRead > 0)
-            {
-                // Convert the incoming byte array to a string and append it to the reply data.
-                string partialReplyData = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                replyDataBuilder.Append(partialReplyData);
-
-                // Clear the buffer for the next iteration.
-                Array.Clear(buffer, 0, buffer.Length);
-            }
-        } while (stream.DataAvailable);
-
+            // Clear the buffer for the next iteration.
+            Array.Clear(buffer, 0, buffer.Length);
+        }
         // Display the complete server's reply.
         return replyDataBuilder.ToString();
     }

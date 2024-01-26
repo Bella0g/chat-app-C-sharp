@@ -130,12 +130,10 @@ class ChatMessages
             {
                 case ConsoleKey.D1:
                     PublicChat();
-                    MessageMenu(stream, username);
                     break;
 
                 case ConsoleKey.D2:
                     PrivateChat();
-                    MessageMenu(stream, username);
                     break;
 
                 case ConsoleKey.D3:
@@ -234,6 +232,7 @@ class ChatMessages
         }
     }
 
+/*
     // Message menu that apears when in a chat room
     private static void MessageMenu(NetworkStream stream, string username)
     {
@@ -260,7 +259,7 @@ class ChatMessages
             }
         }
     }
-
+*/
     private static void Message(NetworkStream stream, string username)
     {
         Console.WriteLine("Type message: ");

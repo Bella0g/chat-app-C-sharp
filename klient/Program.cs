@@ -12,52 +12,17 @@ namespace chat_client;
 
 class ChatMessages
 {
-    private
-
     static void Main(string[] args)
     {
         //Socket
         //Skapar en TcpClient och anger ip och port för att ansluta till server.
         //Här får vi ange en publik ip senare om vi alla ska kunna ansluta.
-        TcpClient tcpClient = new TcpClient("127.0.0.1", 27500); //213.64.250.75"
+        TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
 
         //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
         NetworkStream stream = tcpClient.GetStream();
-
-        // Start a background thread to listen for server messages
-        Thread receiveThread = new Thread(() => ListenForMessages(stream));
-        receiveThread.Start();
-
         MainMenu(stream);
 
-    }
-
-    private static void ListenForMessages(NetworkStream stream)
-    {
-        try
-        {
-            while (true)
-            {
-                string messages = ReadFromServer(stream);
-
-                if (!string.IsNullOrEmpty(messages))
-                {
-                    Console.WriteLine(messages);
-
-                    if (messages.Contains("User has connected"))
-                    {
-                        Console.WriteLine("Press any key to continue...");
-                        Console.ReadKey();
-                        Console.Clear();
-                    }
-                }
-                Thread.Sleep(100);
-            }
-        }
-        catch (Exception ex)
-        {
-
-        }
     }
 
     private static void MainMenu(NetworkStream stream)
@@ -124,8 +89,8 @@ class ChatMessages
         string registrationData = $"REGISTER.{regUsername},{regPassword}";
         SendToServer(stream, registrationData);
 
-
-
+        string replyData = ReadFromServer(stream);
+        Console.WriteLine(replyData);
     }
 
     private static void LoginUser(NetworkStream stream)
@@ -139,6 +104,8 @@ class ChatMessages
 
         string? loginData = $"LOGIN.{username},{password}";
         SendToServer(stream, loginData);
+
+        System.Threading.Thread.Sleep(100);
 
         string replyData = ReadFromServer(stream);
         Console.WriteLine($"{replyData}\n");
@@ -176,7 +143,7 @@ class ChatMessages
                     return;
 
                 case ConsoleKey.D4:
-                    Message(stream, username); //Send message to self
+                    Message(stream, username); //Send message to server.
                     break;
 
                 default:
@@ -217,8 +184,6 @@ class ChatMessages
         // Display the complete server's reply.
         return replyDataBuilder.ToString();
     }
-
-
 
     private static void PublicChat(NetworkStream stream, string username)
     {
@@ -299,24 +264,23 @@ class ChatMessages
         SendToServer(stream, messageData);
     }
 
+    //private static void ReadAndPrintMessages(NetworkStream stream, string username) //Method to read messages from the server and prints to the console
+    //{
+    //    do
+    //    {
+    //        string messages = ReadFromServer(stream);
+    //        Console.WriteLine($"{messages}\n");
 
-    private static void ReadAndPrintMessages(NetworkStream stream, string username) //Method to read messages from the server and prints to the console
-    {
-        do
-        {
-            string messages = ReadFromServer(stream);
-            Console.WriteLine($"{messages}\n");
+    //        Console.WriteLine("Press 'M' to go back to the menu...");
+    //        ConsoleKeyInfo key = Console.ReadKey();
 
-            Console.WriteLine("Press 'M' to go back to the menu...");
-            ConsoleKeyInfo key = Console.ReadKey();
+    //        if (key.Key == ConsoleKey.M)
+    //        {
+    //            return; // Return to the menu
+    //        }
 
-            if (key.Key == ConsoleKey.M)
-            {
-                return; // Return to the menu
-            }
+    //    } while (true); //the loop continues as long as the recived message is not null or empty
 
-        } while (true); //the loop continues as long as the recived message is not null or empty
-
-    }
+    //}
 }
 

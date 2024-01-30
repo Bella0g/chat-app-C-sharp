@@ -116,6 +116,12 @@ class ChatMessages
         }
     }
 
+    private static void LogoutUser(NetworkStream stream, string username)
+    {
+        string logoutData = ($"LOGOUT.{username}");
+        SendToServer(stream, logoutData);
+    }
+
     private static void LoggedInMenu(NetworkStream stream, string username)
     {
 
@@ -139,7 +145,7 @@ class ChatMessages
                     break;
 
                 case ConsoleKey.D3:
-
+                    LogoutUser(stream, username);
                     return;
 
                 case ConsoleKey.D4:

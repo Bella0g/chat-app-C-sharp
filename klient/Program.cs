@@ -12,8 +12,8 @@ namespace chat_client;
 
 class ChatMessages
 {
-    private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
     static void Main(string[] args)
     {
@@ -305,7 +305,7 @@ class ChatMessages
             case "BROADCAST":
                 // Process the broadcast message (e.g., display it)
                 string broadcastMessage = messageParts[1];
-                Console.WriteLine (broadcastMessage);
+                Console.WriteLine($"[Broadcast] {broadcastMessage}");
                 break;
 
             // Add cases for other message types if needed

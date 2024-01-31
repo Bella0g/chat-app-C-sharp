@@ -146,6 +146,7 @@ class ChatMessages
 
                 case ConsoleKey.D3:
                     LogoutUser(stream, username);
+                    SendLogoutMessage(stream, username);
                     return;
 
                 case ConsoleKey.D4:
@@ -268,6 +269,12 @@ class ChatMessages
         string? message = Console.ReadLine();
         string messageData = ($"MESSAGE.{username},{message}");
         SendToServer(stream, messageData);
+    }
+    private static void SendLogoutMessage(NetworkStream stream, string username)
+    {
+        string message = "LOGOUT." + username;
+        byte[] buffer = Encoding.ASCII.GetBytes(message);
+        stream.Write(buffer, 0, buffer.Length);
     }
 
     //private static void ReadAndPrintMessages(NetworkStream stream, string username) //Method to read messages from the server and prints to the console

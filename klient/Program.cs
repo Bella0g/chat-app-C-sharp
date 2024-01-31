@@ -12,15 +12,15 @@ namespace chat_client;
 
 class ChatMessages
 {
+    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    private static NetworkStream stream = tcpClient.GetStream();
     static void Main(string[] args)
     {
-        //Socket
-        //Skapar en TcpClient och anger ip och port för att ansluta till server.
-        //Här får vi ange en publik ip senare om vi alla ska kunna ansluta.
-        TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+        Thread listenerThread = new Thread(ListenForMessages);
+        listenerThread.IsBackground = true;
+        listenerThread.Start();
 
-        //Hämtar nätverksström från TcpClient för att kunna kommunicera med servern.
-        NetworkStream stream = tcpClient.GetStream();
         MainMenu(stream);
 
     }
@@ -276,6 +276,45 @@ class ChatMessages
         byte[] buffer = Encoding.ASCII.GetBytes(message);
         stream.Write(buffer, 0, buffer.Length);
     }
+
+    static void ListenForMessages()
+    {
+        while (true)
+        {
+            byte[] buffer = new byte[1024];
+            int bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+            if (bytesRead > 0)
+            {
+                string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                ProcessMessage(message);
+            }
+
+            Thread.Sleep(100);
+        }
+    }
+
+    static void ProcessMessage(string message)
+    {
+        // Handle different types of messages (e.g., broadcast messages)
+        string[] messageParts = message.Split('.');
+        string messageType = messageParts[0];
+
+        switch (messageType)
+        {
+            case "BROADCAST":
+                // Process the broadcast message (e.g., display it)
+                string broadcastMessage = messageParts[1];
+                Console.WriteLine($"[Broadcast] {broadcastMessage}");
+                break;
+
+            // Add cases for other message types if needed
+
+            default:
+                break;
+        }
+    }
+
 
     //private static void ReadAndPrintMessages(NetworkStream stream, string username) //Method to read messages from the server and prints to the console
     //{

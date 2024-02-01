@@ -7,22 +7,19 @@ using MongoDB.Bson;
 using System.Collections.Generic;
 using ZstdSharp;
 using System.IO;
+using System.IO.Enumeration;
 
 namespace chat_client;
 
 class ChatMessages
 {
-    private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
+    
     static void Main(string[] args)
     {
-        Thread listenerThread = new Thread(ListenForMessages);
-        listenerThread.IsBackground = true;
-        listenerThread.Start();
-
         MainMenu(stream);
-
     }
 
     private static void MainMenu(NetworkStream stream)
@@ -109,22 +106,17 @@ class ChatMessages
 
         string replyData = ReadFromServer(stream);
         Console.WriteLine($"{replyData}\n");
-
+      
         if (replyData.Contains("Welcome"))
         {
             LoggedInMenu(stream, username);
         }
     }
 
-    private static void LogoutUser(NetworkStream stream, string username)
-    {
-        string logoutData = ($"LOGOUT.{username}");
-        SendToServer(stream, logoutData);
-    }
-
     private static void LoggedInMenu(NetworkStream stream, string username)
     {
-
+        string data = ReadFromServer(stream);
+        Console.WriteLine(data);
         while (true)
         {
             Console.WriteLine("\n1. Public chat");
@@ -145,8 +137,7 @@ class ChatMessages
                     break;
 
                 case ConsoleKey.D3:
-                    LogoutUser(stream, username);
-                    SendLogoutMessage(stream, username);
+                    SendToServer(stream, ($"LOGOUT.{username}"));
                     return;
 
                 case ConsoleKey.D4:
@@ -192,39 +183,12 @@ class ChatMessages
         return replyDataBuilder.ToString();
     }
 
-    private static void PublicChat(NetworkStream stream, string username)
+    private static void Message(NetworkStream stream, string username)
     {
-        while (true)
-        {
-            Console.Clear();
-            Console.WriteLine("Welcome to the public chat!");
-            Console.WriteLine("Press q to leave the public chat.");
-            string option = Console.ReadLine()!;
-            if (option == "q" || option == "Q")
-            {
-                break;
-            }
-
-            Console.WriteLine("\nPrivate Menu:");
-            Console.WriteLine("1. Send Message");
-            Console.WriteLine("2. Back to Main Menu");
-
-            ConsoleKeyInfo key = Console.ReadKey();
-
-            switch (key.Key)
-            {
-                case ConsoleKey.D1:
-                    Message(stream, username);
-                    break;
-
-                case ConsoleKey.D2:
-                    return; // Return to the login menu
-
-                default:
-                    Console.WriteLine("\nInvalid choice. Try again.");
-                    break;
-            }
-        }
+        Console.WriteLine("Type message: ");
+        string? message = Console.ReadLine();
+        string messageData = ($"MESSAGE.{username},{message}");
+        SendToServer(stream, messageData);
     }
 
     private static void PrivateChat(NetworkStream stream, string username)
@@ -263,76 +227,43 @@ class ChatMessages
         }
     }
 
-    private static void Message(NetworkStream stream, string username)
-    {
-        Console.WriteLine("Type message: ");
-        string? message = Console.ReadLine();
-        string messageData = ($"MESSAGE.{username},{message}");
-        SendToServer(stream, messageData);
-    }
-    private static void SendLogoutMessage(NetworkStream stream, string username)
-    {
-        string message = "LOGOUT." + username;
-        byte[] buffer = Encoding.ASCII.GetBytes(message);
-        stream.Write(buffer, 0, buffer.Length);
-    }
-
-    static void ListenForMessages()
+    private static void PublicChat(NetworkStream stream, string username)
     {
         while (true)
         {
-            byte[] buffer = new byte[1024];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
-
-            if (bytesRead > 0)
+            Console.Clear();
+            Console.WriteLine("Welcome to the public chat!");
+            Console.WriteLine("Press q to leave the public chat.");
+            string option = Console.ReadLine()!;
+            if (option == "q" || option == "Q")
             {
-                string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                ProcessMessage(message);
+                break;
             }
 
-            Thread.Sleep(100);
+            Console.WriteLine("\nPrivate Menu:");
+            Console.WriteLine("1. Send Message");
+            Console.WriteLine("2. Back to Main Menu");
+
+            ConsoleKeyInfo key = Console.ReadKey();
+
+            switch (key.Key)
+            {
+                case ConsoleKey.D1:
+                    Message(stream, username);
+                    break;
+
+                case ConsoleKey.D2:
+                    return; // Return to the login menu
+
+                default:
+                    Console.WriteLine("\nInvalid choice. Try again.");
+                    break;
+            }
         }
     }
 
-    static void ProcessMessage(string message)
+    private static bool isValidString(string str)
     {
-        // Handle different types of messages (e.g., broadcast messages)
-        string[] messageParts = message.Split('.');
-        string messageType = messageParts[0];
-
-        switch (messageType)
-        {
-            case "BROADCAST":
-                // Process the broadcast message (e.g., display it)
-                string broadcastMessage = messageParts[1];
-                Console.WriteLine (broadcastMessage);
-                break;
-
-            // Add cases for other message types if needed
-
-            default:
-                break;
-        }
+        return !string.IsNullOrWhiteSpace(str) && !str.Contains(" ") && !str.Contains(",");
     }
-
-
-    //private static void ReadAndPrintMessages(NetworkStream stream, string username) //Method to read messages from the server and prints to the console
-    //{
-    //    do
-    //    {
-    //        string messages = ReadFromServer(stream);
-    //        Console.WriteLine($"{messages}\n");
-
-    //        Console.WriteLine("Press 'M' to go back to the menu...");
-    //        ConsoleKeyInfo key = Console.ReadKey();
-
-    //        if (key.Key == ConsoleKey.M)
-    //        {
-    //            return; // Return to the menu
-    //        }
-
-    //    } while (true); //the loop continues as long as the recived message is not null or empty
-
-    //}
 }
-

@@ -16,7 +16,7 @@ class ChatMessages
     //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
     private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
-    
+
     static void Main(string[] args)
     {
         MainMenu(stream);
@@ -106,7 +106,7 @@ class ChatMessages
 
         string replyData = ReadFromServer(stream);
         Console.WriteLine($"{replyData}\n");
-      
+
         if (replyData.Contains("Welcome"))
         {
             LoggedInMenu(stream, username);

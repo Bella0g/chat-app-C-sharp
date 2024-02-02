@@ -116,6 +116,7 @@ class ChatMessages
     private static void LogoutUser(NetworkStream stream, string logoutData)
     {
         SendToServer(stream, logoutData);
+        Console.Clear();
         MainMenu(stream);
     }
 
@@ -223,6 +224,14 @@ class ChatMessages
         string? message = Console.ReadLine();
         string messageData = ($"MESSAGE.{username},{message}");
         SendToServer(stream, messageData);
+        Console.Clear();
+
+        System.Threading.Thread.Sleep(100);
+
+        string reply = ReadFromServer(stream);
+        Console.WriteLine(reply);
+
+        LoggedInMenu(stream, username);
     }
 
     private static void PrivateChat(NetworkStream stream, string username)

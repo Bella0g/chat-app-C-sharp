@@ -13,8 +13,8 @@ namespace chat_client;
 
 class ChatMessages
 {
-    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
 
     static void Main(string[] args)
@@ -113,42 +113,76 @@ class ChatMessages
         }
     }
 
+    private static void LogoutUser(NetworkStream stream, string logoutData)
+    {
+        SendToServer(stream, logoutData);
+        MainMenu(stream);
+    }
+
     private static void LoggedInMenu(NetworkStream stream, string username)
     {
-        string data = ReadFromServer(stream);
-        Console.WriteLine(data);
+
+        string operation = "";
+
+        Console.WriteLine("\n1. Public chat");
+        Console.WriteLine("2. Private chat");
+        Console.WriteLine("3. Logout");
+        Console.WriteLine("4. Send a message to the server");
+
         while (true)
         {
-            Console.WriteLine("\n1. Public chat");
-            Console.WriteLine("2. Private chat");
-            Console.WriteLine("3. Logout");
-            Console.WriteLine("4. Send a message to the server");
-
-            ConsoleKeyInfo key = Console.ReadKey();
-
-            switch (key.Key)
+            operation = Console.ReadLine();
+            if (operation == "1")
             {
-                case ConsoleKey.D1:
-                    PublicChat(stream, username);
-                    break;
-
-                case ConsoleKey.D2:
-                    PrivateChat(stream, username);
-                    break;
-
-                case ConsoleKey.D3:
-                    SendToServer(stream, ($"LOGOUT.{username}"));
-                    return;
-
-                case ConsoleKey.D4:
-                    Message(stream, username); //Send message to server.
-                    break;
-
-                default:
-                    Console.WriteLine("\nInvalid choice. Try again.");
-                    break;
+                PublicChat(stream, username);
+            }
+            else if (operation == "2")
+            {
+                PrivateChat(stream, username);
+            }
+            else if (operation == "3")
+            {
+                LogoutUser(stream, ($"LOGOUT.{username}"));
+            }
+            else if (operation == "4")
+            {
+                Message(stream, username); //Send message to server.
             }
         }
+
+
+        //while (true)
+        //{
+        //    Console.WriteLine("\n1. Public chat");
+        //    Console.WriteLine("2. Private chat");
+        //    Console.WriteLine("3. Logout");
+        //    Console.WriteLine("4. Send a message to the server");
+
+        //    ConsoleKeyInfo key = Console.ReadKey();
+
+        //    switch (key.Key)
+        //    {
+        //        case ConsoleKey.D1:
+        //            PublicChat(stream, username);
+        //            break;
+
+        //        case ConsoleKey.D2:
+        //            PrivateChat(stream, username);
+        //            break;
+
+        //        case ConsoleKey.D3:
+        //            SendToServer(stream, ($"LOGOUT.{username}"));
+        //            return;
+
+        //        case ConsoleKey.D4:
+        //            Message(stream, username); //Send message to server.
+        //            break;
+
+        //        default:
+        //            Console.WriteLine("\nInvalid choice. Try again.");
+        //            break;
+        //    }
+        //}
     }
 
     private static void SendToServer(NetworkStream stream, string data)

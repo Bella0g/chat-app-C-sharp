@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using ZstdSharp;
 using System.IO;
 using System.IO.Enumeration;
+using System.Data;
 
 namespace chat_client;
 
-class ChatMessages
+class Client
 {
     private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
     //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
@@ -19,6 +20,7 @@ class ChatMessages
 
     static void Main(string[] args)
     {
+        Console.WriteLine("Welcome to the ChatApp!\n");
         MainMenu(stream);
     }
 
@@ -26,90 +28,100 @@ class ChatMessages
     {
         while (true)
         {
-            // Användaren är inte inloggad, implementera keybindings för inloggning och registrering
-            Console.WriteLine("Tryck r för att registrera användare.");
-            Console.WriteLine("Tryck l för att logga in.");
-            Console.WriteLine("Tryck q för att avsluta programmet.");
-            ConsoleKeyInfo key = Console.ReadKey();
+            Console.WriteLine("1. Register user");
+            Console.WriteLine("2. Login");
+            Console.WriteLine("3. Exit program");
 
-            switch (key.Key)
+            string operation = Console.ReadLine();
+            if (operation == "1")
             {
-                case ConsoleKey.R:
-                    Console.WriteLine("\nAnge ditt användarnamn och lösenord för registrering:");
-                    RegisterUser(stream);
-                    break;
-
-                case ConsoleKey.L:
-                    Console.WriteLine("\nAnge ditt användarnamn och lösenord för inloggning:");
-                    LoginUser(stream);
-                    break;
-
-                case ConsoleKey.Q:
-                    Environment.Exit(0);
-                    break;
-
-                default:
-                    Console.WriteLine("\nOgiltig tangent. Försök igen.");
-                    break;
+                Console.Clear();
+                Console.WriteLine("Register a new user\n");
+                RegisterUser(stream);
+            }
+            else if (operation == "2")
+            {
+                Console.Clear();
+                Console.WriteLine("Login with an existing user\n");
+                LoginUser(stream);
+            }
+            else if (operation == "3")
+            {
+                tcpClient.Close();
+                Environment.Exit(0);
             }
         }
     }
 
     public static void RegisterUser(NetworkStream stream)
     {
-        string regUsername;
-        string regPassword;
-
-        do
+        while (true)
         {
-            Console.WriteLine("Enter username: "); //Asking the user to enter username using the terminal
-            regUsername = Console.ReadLine()!; //Read the input for username from the terminal
+            Console.Write("Enter username: ");
+            string? username = Console.ReadLine();
 
-            if (string.IsNullOrWhiteSpace(regUsername)) //Checking if the username string is null or whitespace
+            Console.Write("Enter password: ");
+            string? password = Console.ReadLine();
+
+            Console.Clear();
+
+            if (isValidString(username) && isValidString(password))
             {
-                Console.WriteLine("Error: You need to enter a username."); //Error message for empty input
+                string? registrationData = $"REGISTER.{username},{password}";
+                SendToServer(stream, registrationData);
+
+                System.Threading.Thread.Sleep(100);
+
+                string replyData = ReadFromServer(stream);
+                Console.WriteLine($"{replyData}\n");
+                MainMenu(stream);
             }
-        } while (string.IsNullOrWhiteSpace(regUsername)); //Condition for the loop to continue to execute as long as the username is null or a empty string
-
-        do
-        {
-            Console.WriteLine("Enter password: "); //Asking the user to enter password using the terminal
-            regPassword = Console.ReadLine()!; //Read the input for password from the terminal
-
-            if (string.IsNullOrWhiteSpace(regPassword)) //Checking if the password string is null or whitespace
+            else
             {
-                Console.WriteLine("Error: You need to enter a password."); //Error message for empty input
+                Console.WriteLine("Invalid username or password. Comma \",\" and spacebar \" \" are not allowed.\nPlease try again\n");
+                MainMenu(stream);
             }
-        } while (string.IsNullOrWhiteSpace(regPassword)); //Condition for the loop to continue to execute as long as the password is null or whitespaced
-
-        // Skapa en sträng för registreringsdata för att skicka till servern.
-        string registrationData = $"REGISTER.{regUsername},{regPassword}";
-        SendToServer(stream, registrationData);
-
-        string replyData = ReadFromServer(stream);
-        Console.WriteLine(replyData);
+        }
     }
 
     private static void LoginUser(NetworkStream stream)
     {
-        Console.Write("Enter username: ");
-        string? username = Console.ReadLine();
-
-        Console.Write("Enter password: ");
-        string? password = Console.ReadLine();
-        Console.Clear();
-
-        string? loginData = $"LOGIN.{username},{password}";
-        SendToServer(stream, loginData);
-
-        System.Threading.Thread.Sleep(100);
-
-        string replyData = ReadFromServer(stream);
-        Console.WriteLine($"{replyData}\n");
-
-        if (replyData.Contains("Welcome"))
+        while (true)
         {
-            LoggedInMenu(stream, username);
+
+            Console.Write("Enter username: ");
+            string? username = Console.ReadLine();
+
+            Console.Write("Enter password: ");
+            string? password = Console.ReadLine();
+
+            Console.Clear();
+
+            if (isValidString(username) && isValidString(password))
+            {
+
+                string? loginData = $"LOGIN.{username},{password}";
+                SendToServer(stream, loginData);
+
+                System.Threading.Thread.Sleep(100);
+
+                string replyData = ReadFromServer(stream);
+                Console.WriteLine($"{replyData}\n");
+
+                if (replyData.Contains("Welcome"))
+                {
+                    LoggedInMenu(stream, username);
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                Console.WriteLine("There is no such user in the database. Please try again.\n");
+                return;
+            }
         }
     }
 
@@ -122,17 +134,15 @@ class ChatMessages
 
     private static void LoggedInMenu(NetworkStream stream, string username)
     {
-
-        string operation = "";
-
-        Console.WriteLine("\n1. Public chat");
-        Console.WriteLine("2. Private chat");
-        Console.WriteLine("3. Logout");
-        Console.WriteLine("4. Send a message to the server");
-
         while (true)
         {
-            operation = Console.ReadLine();
+            Console.WriteLine("1. Public chat");
+            Console.WriteLine("2. Private chat");
+            Console.WriteLine("3. Send a message to the server");
+            Console.WriteLine("4. Logout");
+
+            string operation = Console.ReadLine();
+
             if (operation == "1")
             {
                 PublicChat(stream, username);
@@ -143,47 +153,15 @@ class ChatMessages
             }
             else if (operation == "3")
             {
-                LogoutUser(stream, ($"LOGOUT.{username}"));
+                Console.Clear();
+                Message(stream, username); //Send message to server.
             }
             else if (operation == "4")
             {
-                Message(stream, username); //Send message to server.
+                LogoutUser(stream, ($"LOGOUT.{username}"));
+                MainMenu(stream);
             }
         }
-
-
-        //while (true)
-        //{
-        //    Console.WriteLine("\n1. Public chat");
-        //    Console.WriteLine("2. Private chat");
-        //    Console.WriteLine("3. Logout");
-        //    Console.WriteLine("4. Send a message to the server");
-
-        //    ConsoleKeyInfo key = Console.ReadKey();
-
-        //    switch (key.Key)
-        //    {
-        //        case ConsoleKey.D1:
-        //            PublicChat(stream, username);
-        //            break;
-
-        //        case ConsoleKey.D2:
-        //            PrivateChat(stream, username);
-        //            break;
-
-        //        case ConsoleKey.D3:
-        //            SendToServer(stream, ($"LOGOUT.{username}"));
-        //            return;
-
-        //        case ConsoleKey.D4:
-        //            Message(stream, username); //Send message to server.
-        //            break;
-
-        //        default:
-        //            Console.WriteLine("\nInvalid choice. Try again.");
-        //            break;
-        //    }
-        //}
     }
 
     private static void SendToServer(NetworkStream stream, string data)
@@ -220,7 +198,7 @@ class ChatMessages
 
     private static void Message(NetworkStream stream, string username)
     {
-        Console.WriteLine("Type message: ");
+        Console.Write("Type message: ");
         string? message = Console.ReadLine();
         string messageData = ($"MESSAGE.{username},{message}");
         SendToServer(stream, messageData);

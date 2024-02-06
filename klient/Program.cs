@@ -14,8 +14,8 @@ namespace chat_client;
 
 class Client
 {
-    private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27550);
     private static NetworkStream stream = tcpClient.GetStream();
 
     static void Main(string[] args)
@@ -32,23 +32,27 @@ class Client
             Console.WriteLine("2. Login");
             Console.WriteLine("3. Exit program");
 
-            string operation = Console.ReadLine();
-            if (operation == "1")
+            ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+
+            switch (keyInfo.Key)
             {
-                Console.Clear();
-                Console.WriteLine("Register a new user\n");
-                RegisterUser(stream);
-            }
-            else if (operation == "2")
-            {
-                Console.Clear();
-                Console.WriteLine("Login with an existing user\n");
-                LoginUser(stream);
-            }
-            else if (operation == "3")
-            {
-                tcpClient.Close();
-                Environment.Exit(0);
+                case ConsoleKey.D1:
+                    Console.Clear();
+                    Console.WriteLine("Register a new user\n");
+                    RegisterUser(stream);
+                    break;
+                case ConsoleKey.D2:
+                    Console.Clear();
+                    Console.WriteLine("Login with an existing user\n");
+                    LoginUser(stream);
+                    break;
+                case ConsoleKey.D3:
+                    tcpClient.Close();
+                    Environment.Exit(0);
+                    break;
+                default:
+                    Console.WriteLine("Invalid input. Please try again.");
+                    break;
             }
         }
     }
@@ -63,7 +67,7 @@ class Client
             Console.Write("Enter password: ");
             string? password = Console.ReadLine();
 
-            Console.Clear();
+            
 
             if (isValidString(username) && isValidString(password))
             {
@@ -95,7 +99,7 @@ class Client
             Console.Write("Enter password: ");
             string? password = Console.ReadLine();
 
-            Console.Clear();
+            
 
             if (isValidString(username) && isValidString(password))
             {
@@ -134,6 +138,20 @@ class Client
 
     private static void LoggedInMenu(NetworkStream stream, string username)
     {
+        bool stopListening = false;
+
+        Thread serverListenerThread = new Thread(() => {
+            while (!stopListening)
+            {
+                if (stream.DataAvailable)
+                {
+                    string reply = ReadFromServer(stream);
+                    Console.WriteLine(reply);
+                }
+            }
+        });
+        serverListenerThread.Start();
+
         while (true)
         {
             Console.WriteLine("1. Public chat");
@@ -141,25 +159,28 @@ class Client
             Console.WriteLine("3. Send a message to the server");
             Console.WriteLine("4. Logout");
 
-            string operation = Console.ReadLine();
+            ConsoleKeyInfo keyInfo = Console.ReadKey(true);
 
-            if (operation == "1")
+            switch (keyInfo.Key)
             {
-                PublicChat(stream, username);
-            }
-            else if (operation == "2")
-            {
-                PrivateChat(stream, username);
-            }
-            else if (operation == "3")
-            {
-                Console.Clear();
-                Message(stream, username); //Send message to server.
-            }
-            else if (operation == "4")
-            {
-                LogoutUser(stream, ($"LOGOUT.{username}"));
-                MainMenu(stream);
+                case ConsoleKey.D1:
+                    PublicChat(stream, username);
+                    break;
+                case ConsoleKey.D2:
+                    PrivateChat(stream, username);
+                    break;
+                case ConsoleKey.D3:
+                    stopListening = true;
+                    Message(stream, username);
+                    break;
+                case ConsoleKey.D4:
+                    stopListening = true;
+                    LogoutUser(stream, ($"LOGOUT.{username}"));
+                    MainMenu(stream);
+                    break;
+                default:
+                    Console.WriteLine("Invalid input. Please try again.");
+                    break;
             }
         }
     }
@@ -202,7 +223,7 @@ class Client
         string? message = Console.ReadLine();
         string messageData = ($"MESSAGE.{username},{message}");
         SendToServer(stream, messageData);
-        Console.Clear();
+        
 
         System.Threading.Thread.Sleep(100);
 
@@ -216,7 +237,7 @@ class Client
     {
         while (true)
         {
-            Console.Clear();
+            
             Console.WriteLine("Welcome to the private chat!");
             Console.WriteLine("Press q to leave the private chat.");
             string option = Console.ReadLine()!;
@@ -252,7 +273,7 @@ class Client
     {
         while (true)
         {
-            Console.Clear();
+            
             Console.WriteLine("Welcome to the public chat!");
             Console.WriteLine("Press q to leave the public chat.");
             string option = Console.ReadLine()!;

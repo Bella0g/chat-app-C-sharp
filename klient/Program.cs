@@ -14,8 +14,8 @@ namespace chat_client;
 
 class Client
 {
-    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
 
     static void Main(string[] args)
@@ -163,9 +163,10 @@ class Client
                     stopListening = true;
                     PublicChat(stream, username);
                     break;
-                //case ConsoleKey.D2:
-                //    PrivateChat(stream, username);
-                //    break;
+                case ConsoleKey.D2:
+                    stopListening = true;
+                    PrivateChat(stream, username);
+                    break;
                 case ConsoleKey.D3:
                     stopListening = true;
                     LogoutUser(stream, ($"LOGOUT.{username}"));
@@ -248,7 +249,39 @@ class Client
 
     private static void PrivateChat(NetworkStream stream, string username)
     {
+        bool stopListening = false;
+        string message = "";
 
+        Console.WriteLine("Welcome to the Private Chat!\nType exit to leave.\n");
+        Console.WriteLine("Enter the receivers username: ");
+        string receiver = Console.ReadLine();
+
+        Thread serverListenerThread = new Thread(() =>
+        {
+            while (!stopListening)
+            {
+                if (stream.DataAvailable)
+                {
+                    string reply = ReadFromServer(stream);
+                    Console.WriteLine(reply);
+                }
+            }
+        });
+        serverListenerThread.Start();
+
+        while (true)
+        {
+            message = Console.ReadLine();
+
+            if (message == "exit")
+            {
+                stopListening = true;
+                LoggedInMenu(stream, username);
+            }
+
+            string messageData = ($"PRIVATE_MESSAGE.{username},{receiver},{message}");
+            SendToServer(stream, messageData);
+        }
     }
 
     private static bool isValidString(string str)

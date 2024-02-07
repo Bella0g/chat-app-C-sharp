@@ -67,8 +67,6 @@ class Client
             Console.Write("Enter password: ");
             string? password = Console.ReadLine();
 
-
-
             if (isValidString(username) && isValidString(password))
             {
                 string? registrationData = $"REGISTER.{username},{password}";
@@ -92,23 +90,17 @@ class Client
     {
         while (true)
         {
-
             Console.Write("Enter username: ");
             string? username = Console.ReadLine();
 
             Console.Write("Enter password: ");
             string? password = Console.ReadLine();
 
-
-
             if (isValidString(username) && isValidString(password))
             {
-
                 string? loginData = $"LOGIN.{username},{password}";
                 SendToServer(stream, loginData);
-
-                System.Threading.Thread.Sleep(100);
-
+                
                 string replyData = ReadFromServer(stream);
                 Console.WriteLine($"{replyData}\n");
 
@@ -160,8 +152,8 @@ class Client
         {
             Console.WriteLine("1. Public chat");
             Console.WriteLine("2. Private chat");
-            Console.WriteLine("3. Send a message to the server");
-            Console.WriteLine("4. Logout");
+            Console.WriteLine("3. Logout");
+            
 
             ConsoleKeyInfo keyInfo = Console.ReadKey(true);
 
@@ -174,11 +166,7 @@ class Client
                 //case ConsoleKey.D2:
                 //    PrivateChat(stream, username);
                 //    break;
-                //case ConsoleKey.D3:
-                //    stopListening = true;
-                //    Message(stream, username);
-                //    break;
-                case ConsoleKey.D4:
+                case ConsoleKey.D3:
                     stopListening = true;
                     LogoutUser(stream, ($"LOGOUT.{username}"));
                     MainMenu(stream);
@@ -245,8 +233,8 @@ class Client
 
         while (true)
         {
-            
             message = Console.ReadLine();
+            
             if (message == "exit")
             {
                 stopListening = true;
@@ -256,19 +244,6 @@ class Client
             string messageData = ($"PUBLIC_MESSAGE.{username},{message}");
             SendToServer(stream, messageData);
         }
-
-        //Console.Write("Type message: ");
-        //string? message = Console.ReadLine();
-        //string messageData = ($"PUBLIC_MESSAGE.{username},{message}");
-        //SendToServer(stream, messageData);
-
-
-        //System.Threading.Thread.Sleep(100);
-
-        //string reply = ReadFromServer(stream);
-        //Console.WriteLine(reply);
-
-        //LoggedInMenu(stream, username);
     }
 
     private static bool isValidString(string str)

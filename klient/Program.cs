@@ -14,14 +14,14 @@ namespace chat_client;
 
 class Client
 {
-    private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
 
     static void Main(string[] args)
     {
-        Console.WriteLine("Welcome to the ChatApp!\n");
-        MainMenu(stream);
+            Console.WriteLine("Welcome to the ChatApp!\n");
+            MainMenu(stream);
     }
 
     private static void MainMenu(NetworkStream stream)
@@ -213,11 +213,12 @@ class Client
 
     private static void PublicChat(NetworkStream stream, string username)
     {
+        Console.Clear();
         bool stopListening = false;
         string message = "";
 
-        Console.WriteLine("Welcome to the Public Chat!\n");
-        Console.WriteLine("Say something: ");
+        Console.WriteLine("Welcome to the Public Chat!\nType exit to leave.\n");
+        Console.WriteLine("Type message");
 
         Thread serverListenerThread = new Thread(() =>
         {
@@ -239,6 +240,7 @@ class Client
             if (message == "exit")
             {
                 stopListening = true;
+                Console.Clear();
                 LoggedInMenu(stream, username);
             }
 
@@ -249,12 +251,14 @@ class Client
 
     private static void PrivateChat(NetworkStream stream, string username)
     {
+        Console.Clear();
         bool stopListening = false;
         string message = "";
 
         Console.WriteLine("Welcome to the Private Chat!\nType exit to leave.\n");
-        Console.WriteLine("Enter the receivers username: ");
+        Console.Write("Enter the receivers username: ");
         string receiver = Console.ReadLine();
+        Console.Write("Type message: ");
 
         Thread serverListenerThread = new Thread(() =>
         {
@@ -276,6 +280,7 @@ class Client
             if (message == "exit")
             {
                 stopListening = true;
+                Console.Clear();
                 LoggedInMenu(stream, username);
             }
 

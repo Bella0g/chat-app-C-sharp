@@ -246,79 +246,14 @@ class Client
         }
     }
 
+    private static void PrivateChat(NetworkStream stream, string username)
+    {
+
+    }
+
     private static bool isValidString(string str)
     {
         return !string.IsNullOrWhiteSpace(str) && !str.Contains(" ") && !str.Contains(",");
     }
 }
 
-//private static void PrivateChat(NetworkStream stream, string username)
-//{
-//    while (true)
-//    {
-
-//        Console.WriteLine("Welcome to the private chat!");
-//        Console.WriteLine("Press q to leave the private chat.");
-//        string option = Console.ReadLine()!;
-//        if (option == "q" || option == "Q")
-//        {
-//            break;
-//        }
-
-//        Console.WriteLine("\nPrivate Menu:");
-//        Console.WriteLine("1. Send Message");
-//        Console.WriteLine("2. Back to Main Menu");
-
-//        ConsoleKeyInfo key = Console.ReadKey();
-
-//        switch (key.Key)
-//        {
-//            case ConsoleKey.D1:
-//                Message(stream, username);
-//                break;
-
-//            case ConsoleKey.D2:
-//                return; // Return to the login menu
-
-//            default:
-//                Console.WriteLine("\nInvalid choice. Try again.");
-//                break;
-//        }
-
-//    }
-//}
-
-//private static void PublicChat(NetworkStream stream, string username)
-//{
-//    while (true)
-//    {
-
-//        Console.WriteLine("Welcome to the public chat!");
-//        Console.WriteLine("Press q to leave the public chat.");
-//        string option = Console.ReadLine()!;
-//        if (option == "q" || option == "Q")
-//        {
-//            break;
-//        }
-
-//        Console.WriteLine("\nPrivate Menu:");
-//        Console.WriteLine("1. Send Message");
-//        Console.WriteLine("2. Back to Main Menu");
-
-//        ConsoleKeyInfo key = Console.ReadKey();
-
-//        switch (key.Key)
-//        {
-//            case ConsoleKey.D1:
-//                Message(stream, username);
-//                break;
-
-//            case ConsoleKey.D2:
-//                return; // Return to the login menu
-
-//            default:
-//                Console.WriteLine("\nInvalid choice. Try again.");
-//                break;
-//        }
-//    }
-//}

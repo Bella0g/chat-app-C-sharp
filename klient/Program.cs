@@ -15,7 +15,7 @@ namespace chat_client;
 class Client
 {
     //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27550);
+    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
 
     static void Main(string[] args)
@@ -67,7 +67,7 @@ class Client
             Console.Write("Enter password: ");
             string? password = Console.ReadLine();
 
-            
+
 
             if (isValidString(username) && isValidString(password))
             {
@@ -99,7 +99,7 @@ class Client
             Console.Write("Enter password: ");
             string? password = Console.ReadLine();
 
-            
+
 
             if (isValidString(username) && isValidString(password))
             {
@@ -140,13 +140,17 @@ class Client
     {
         bool stopListening = false;
 
-        Thread serverListenerThread = new Thread(() => {
+        Thread serverListenerThread = new Thread(() =>
+        {
             while (!stopListening)
             {
                 if (stream.DataAvailable)
                 {
                     string reply = ReadFromServer(stream);
-                    Console.WriteLine(reply);
+                    if (reply.Contains("has logged in") || reply.Contains(username)){
+
+                        Console.WriteLine(reply);
+                    } 
                 }
             }
         });
@@ -164,15 +168,16 @@ class Client
             switch (keyInfo.Key)
             {
                 case ConsoleKey.D1:
+                    stopListening = true;
                     PublicChat(stream, username);
                     break;
-                case ConsoleKey.D2:
-                    PrivateChat(stream, username);
-                    break;
-                case ConsoleKey.D3:
-                    stopListening = true;
-                    Message(stream, username);
-                    break;
+                //case ConsoleKey.D2:
+                //    PrivateChat(stream, username);
+                //    break;
+                //case ConsoleKey.D3:
+                //    stopListening = true;
+                //    Message(stream, username);
+                //    break;
                 case ConsoleKey.D4:
                     stopListening = true;
                     LogoutUser(stream, ($"LOGOUT.{username}"));
@@ -217,91 +222,53 @@ class Client
         return replyDataBuilder.ToString();
     }
 
-    private static void Message(NetworkStream stream, string username)
-    {
-        Console.Write("Type message: ");
-        string? message = Console.ReadLine();
-        string messageData = ($"MESSAGE.{username},{message}");
-        SendToServer(stream, messageData);
-        
-
-        System.Threading.Thread.Sleep(100);
-
-        string reply = ReadFromServer(stream);
-        Console.WriteLine(reply);
-
-        LoggedInMenu(stream, username);
-    }
-
-    private static void PrivateChat(NetworkStream stream, string username)
-    {
-        while (true)
-        {
-            
-            Console.WriteLine("Welcome to the private chat!");
-            Console.WriteLine("Press q to leave the private chat.");
-            string option = Console.ReadLine()!;
-            if (option == "q" || option == "Q")
-            {
-                break;
-            }
-
-            Console.WriteLine("\nPrivate Menu:");
-            Console.WriteLine("1. Send Message");
-            Console.WriteLine("2. Back to Main Menu");
-
-            ConsoleKeyInfo key = Console.ReadKey();
-
-            switch (key.Key)
-            {
-                case ConsoleKey.D1:
-                    Message(stream, username);
-                    break;
-
-                case ConsoleKey.D2:
-                    return; // Return to the login menu
-
-                default:
-                    Console.WriteLine("\nInvalid choice. Try again.");
-                    break;
-            }
-
-        }
-    }
-
     private static void PublicChat(NetworkStream stream, string username)
     {
+        bool stopListening = false;
+        string message = "";
+
+        Console.WriteLine("Welcome to the Public Chat!\n");
+        Console.WriteLine("Say something: ");
+
+        Thread serverListenerThread = new Thread(() =>
+        {
+            while (!stopListening)
+            {
+                if (stream.DataAvailable)
+                {
+                    string reply = ReadFromServer(stream);
+                    Console.WriteLine(reply);
+                }
+            }
+        });
+        serverListenerThread.Start();
+
         while (true)
         {
             
-            Console.WriteLine("Welcome to the public chat!");
-            Console.WriteLine("Press q to leave the public chat.");
-            string option = Console.ReadLine()!;
-            if (option == "q" || option == "Q")
+            message = Console.ReadLine();
+            if (message == "exit")
             {
-                break;
+                stopListening = true;
+                LoggedInMenu(stream, username);
             }
 
-            Console.WriteLine("\nPrivate Menu:");
-            Console.WriteLine("1. Send Message");
-            Console.WriteLine("2. Back to Main Menu");
-
-            ConsoleKeyInfo key = Console.ReadKey();
-
-            switch (key.Key)
-            {
-                case ConsoleKey.D1:
-                    Message(stream, username);
-                    break;
-
-                case ConsoleKey.D2:
-                    return; // Return to the login menu
-
-                default:
-                    Console.WriteLine("\nInvalid choice. Try again.");
-                    break;
-            }
+            string messageData = ($"PUBLIC_MESSAGE.{username},{message}");
+            SendToServer(stream, messageData);
         }
+
+        //Console.Write("Type message: ");
+        //string? message = Console.ReadLine();
+        //string messageData = ($"PUBLIC_MESSAGE.{username},{message}");
+        //SendToServer(stream, messageData);
+
+
+        //System.Threading.Thread.Sleep(100);
+
+        //string reply = ReadFromServer(stream);
+        //Console.WriteLine(reply);
+
+        //LoggedInMenu(stream, username);
     }
 
     private static bool isValidString(string str)
@@ -309,3 +276,74 @@ class Client
         return !string.IsNullOrWhiteSpace(str) && !str.Contains(" ") && !str.Contains(",");
     }
 }
+
+//private static void PrivateChat(NetworkStream stream, string username)
+//{
+//    while (true)
+//    {
+
+//        Console.WriteLine("Welcome to the private chat!");
+//        Console.WriteLine("Press q to leave the private chat.");
+//        string option = Console.ReadLine()!;
+//        if (option == "q" || option == "Q")
+//        {
+//            break;
+//        }
+
+//        Console.WriteLine("\nPrivate Menu:");
+//        Console.WriteLine("1. Send Message");
+//        Console.WriteLine("2. Back to Main Menu");
+
+//        ConsoleKeyInfo key = Console.ReadKey();
+
+//        switch (key.Key)
+//        {
+//            case ConsoleKey.D1:
+//                Message(stream, username);
+//                break;
+
+//            case ConsoleKey.D2:
+//                return; // Return to the login menu
+
+//            default:
+//                Console.WriteLine("\nInvalid choice. Try again.");
+//                break;
+//        }
+
+//    }
+//}
+
+//private static void PublicChat(NetworkStream stream, string username)
+//{
+//    while (true)
+//    {
+
+//        Console.WriteLine("Welcome to the public chat!");
+//        Console.WriteLine("Press q to leave the public chat.");
+//        string option = Console.ReadLine()!;
+//        if (option == "q" || option == "Q")
+//        {
+//            break;
+//        }
+
+//        Console.WriteLine("\nPrivate Menu:");
+//        Console.WriteLine("1. Send Message");
+//        Console.WriteLine("2. Back to Main Menu");
+
+//        ConsoleKeyInfo key = Console.ReadKey();
+
+//        switch (key.Key)
+//        {
+//            case ConsoleKey.D1:
+//                Message(stream, username);
+//                break;
+
+//            case ConsoleKey.D2:
+//                return; // Return to the login menu
+
+//            default:
+//                Console.WriteLine("\nInvalid choice. Try again.");
+//                break;
+//        }
+//    }
+//}

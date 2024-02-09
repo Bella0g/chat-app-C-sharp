@@ -20,8 +20,8 @@ class Client
 
     static void Main(string[] args)
     {
-            Console.WriteLine("Welcome to the ChatApp!\n");
-            MainMenu(stream);
+        Console.WriteLine("Welcome to the ChatApp!\n");
+        MainMenu(stream);
     }
 
     private static void MainMenu(NetworkStream stream)
@@ -43,7 +43,6 @@ class Client
                     break;
                 case ConsoleKey.D2:
                     Console.Clear();
-                    Console.WriteLine("Login with an existing user\n");
                     LoginUser(stream);
                     break;
                 case ConsoleKey.D3:
@@ -57,7 +56,7 @@ class Client
         }
     }
 
-    public static void RegisterUser(NetworkStream stream)
+    private static void RegisterUser(NetworkStream stream)
     {
         while (true)
         {
@@ -71,8 +70,7 @@ class Client
             {
                 string? registrationData = $"REGISTER.{username},{password}";
                 SendToServer(stream, registrationData);
-
-                System.Threading.Thread.Sleep(100);
+                Console.Clear();
 
                 string replyData = ReadFromServer(stream);
                 Console.WriteLine($"{replyData}\n");
@@ -80,6 +78,7 @@ class Client
             }
             else
             {
+                Console.Clear();
                 Console.WriteLine("Invalid username or password. Comma \",\" and spacebar \" \" are not allowed.\nPlease try again\n");
                 MainMenu(stream);
             }
@@ -88,6 +87,7 @@ class Client
 
     private static void LoginUser(NetworkStream stream)
     {
+        Console.WriteLine("Login with an existing user\n");
         while (true)
         {
             Console.Write("Enter username: ");
@@ -100,7 +100,7 @@ class Client
             {
                 string? loginData = $"LOGIN.{username},{password}";
                 SendToServer(stream, loginData);
-                
+                Console.Clear();
                 string replyData = ReadFromServer(stream);
                 Console.WriteLine($"{replyData}\n");
 
@@ -115,16 +115,19 @@ class Client
             }
             else
             {
+                Console.Clear();
                 Console.WriteLine("There is no such user in the database. Please try again.\n");
                 return;
             }
         }
     }
 
-    private static void LogoutUser(NetworkStream stream, string logoutData)
+    private static void LogoutUser(NetworkStream stream, string username)
     {
+        string logoutData = $"LOGOUT.{username}";
         SendToServer(stream, logoutData);
         Console.Clear();
+        Console.WriteLine("\x1b[3J");
         MainMenu(stream);
     }
 
@@ -132,28 +135,27 @@ class Client
     {
         bool stopListening = false;
 
-        Thread serverListenerThread = new Thread(() =>
+        Thread loginListener = new Thread(() =>
         {
             while (!stopListening)
             {
                 if (stream.DataAvailable)
                 {
                     string reply = ReadFromServer(stream);
-                    if (reply.Contains("has logged in") || reply.Contains(username)){
-
+                    if (reply.Contains("has logged"))
+                    {
                         Console.WriteLine(reply);
-                    } 
+                    }
                 }
             }
         });
-        serverListenerThread.Start();
+        loginListener.Start();
 
         while (true)
         {
             Console.WriteLine("1. Public chat");
             Console.WriteLine("2. Private chat");
-            Console.WriteLine("3. Logout");
-            
+            Console.WriteLine("3. Logout\n");
 
             ConsoleKeyInfo keyInfo = Console.ReadKey(true);
 
@@ -169,8 +171,7 @@ class Client
                     break;
                 case ConsoleKey.D3:
                     stopListening = true;
-                    LogoutUser(stream, ($"LOGOUT.{username}"));
-                    MainMenu(stream);
+                    LogoutUser(stream, username);
                     break;
                 default:
                     Console.WriteLine("Invalid input. Please try again.");
@@ -181,7 +182,6 @@ class Client
 
     private static void SendToServer(NetworkStream stream, string data)
     {
-        //Konverterar registreringsdatan genom ASCII-kodning och skickar denna till servern.
         byte[] messageBuffer = Encoding.ASCII.GetBytes(data);
         stream.Write(messageBuffer, 0, messageBuffer.Length);
     }
@@ -191,52 +191,51 @@ class Client
         byte[] buffer = new byte[1024];
         int bytesRead;
         StringBuilder replyDataBuilder = new StringBuilder();
-        //Läser in data från klienten så länge det finns data att läsa.
+
         do
         {
             bytesRead = stream.Read(buffer, 0, buffer.Length);
 
             if (bytesRead > 0)
             {
-                // Convert the incoming byte array to a string and append it to the reply data.
                 string partialReplyData = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                 replyDataBuilder.Append(partialReplyData);
 
-                // Clear the buffer for the next iteration.
                 Array.Clear(buffer, 0, buffer.Length);
             }
         } while (stream.DataAvailable);
 
-        // Display the complete server's reply.
         return replyDataBuilder.ToString();
     }
 
     private static void PublicChat(NetworkStream stream, string username)
     {
         Console.Clear();
+        Console.WriteLine("\x1b[3J");
+
         bool stopListening = false;
-        string message = "";
 
         Console.WriteLine("Welcome to the Public Chat!\nType exit to leave.\n");
         Console.WriteLine("Type message");
 
-        Thread serverListenerThread = new Thread(() =>
+        Thread publicMessageListener = new Thread(() =>
         {
             while (!stopListening)
             {
                 if (stream.DataAvailable)
                 {
                     string reply = ReadFromServer(stream);
-                    Console.WriteLine(reply);
+                    Console.WriteLine($"\n{reply}\n");
+
                 }
             }
         });
-        serverListenerThread.Start();
+        publicMessageListener.Start();
 
         while (true)
         {
-            message = Console.ReadLine();
-            
+            string message = Console.ReadLine();
+
             if (message == "exit")
             {
                 stopListening = true;
@@ -252,15 +251,16 @@ class Client
     private static void PrivateChat(NetworkStream stream, string username)
     {
         Console.Clear();
+        Console.WriteLine("\x1b[3J");
+
         bool stopListening = false;
-        string message = "";
 
         Console.WriteLine("Welcome to the Private Chat!\nType exit to leave.\n");
         Console.Write("Enter the receivers username: ");
         string receiver = Console.ReadLine();
         Console.Write("Type message: ");
 
-        Thread serverListenerThread = new Thread(() =>
+        Thread privateMessageListener = new Thread(() =>
         {
             while (!stopListening)
             {
@@ -271,11 +271,11 @@ class Client
                 }
             }
         });
-        serverListenerThread.Start();
+        privateMessageListener.Start();
 
         while (true)
         {
-            message = Console.ReadLine();
+            string message = Console.ReadLine();
 
             if (message == "exit")
             {
@@ -294,4 +294,3 @@ class Client
         return !string.IsNullOrWhiteSpace(str) && !str.Contains(" ") && !str.Contains(",");
     }
 }
-

@@ -14,8 +14,8 @@ namespace chat_client;
 
 class Client
 {
-    //private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
-    private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
+    private static TcpClient tcpClient = new TcpClient("127.0.0.1", 27500);
+    //private static TcpClient tcpClient = new TcpClient("213.64.250.75", 27500);
     private static NetworkStream stream = tcpClient.GetStream();
 
     static void Main(string[] args)
@@ -256,10 +256,7 @@ class Client
         bool stopListening = false;
 
         Console.WriteLine("Welcome to the Private Chat!\nType exit to leave.\n");
-        Console.Write("Enter the receivers username: ");
-        string receiver = Console.ReadLine();
-        Console.Write("Type message: ");
-
+ 
         Thread privateMessageListener = new Thread(() =>
         {
             while (!stopListening)
@@ -267,11 +264,15 @@ class Client
                 if (stream.DataAvailable)
                 {
                     string reply = ReadFromServer(stream);
-                    Console.WriteLine(reply);
+                    Console.WriteLine($"\n{reply}\n");
                 }
             }
         });
         privateMessageListener.Start();
+
+        Console.Write("Enter the receivers username: ");
+        string receiver = Console.ReadLine();
+        Console.Write("Type message: ");
 
         while (true)
         {
